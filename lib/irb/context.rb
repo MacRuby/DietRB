@@ -4,6 +4,13 @@ module IRB
   class Context
     class << self
       attr_accessor :current
+      
+      def make_current(context)
+        before, @current = @current, context
+        yield
+      ensure
+        @current = before
+      end
     end
     
     attr_reader :object, :binding, :line, :source
@@ -28,10 +35,11 @@ module IRB
     end
     
     def run
-      self.class.current = self
-      while line = readline
-        continue = process_line(line)
-        break unless continue
+      self.class.make_current(self) do
+        while line = readline
+          continue = process_line(line)
+          break unless continue
+        end
       end
     end
     
