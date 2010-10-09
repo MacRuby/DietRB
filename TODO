@@ -2,7 +2,7 @@
 * Write docs for using a as library. Probably right after creating a Cocoa client.
 * Add specs for irb/driver/socket, and possibly for bin/dietrb
 * Configurable history file? (:HISTORY_FILE) Configurable number of saved history lines? (:SAVE_HISTORY)
-* Make sure the following formatters work: hirb, awesome_print, and looksee
+* Make sure the following formatters work: hirb, and looksee
 * Make sure the majority of the utils in utility_belt work
 * Possibly add copy-paste support as an ext
 * Decide whether or not we need more control for colorizing which could be done with Ripper::SexpBuilder
