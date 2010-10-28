@@ -26,6 +26,13 @@ module IRB
     def __evaluate__(source, file = __FILE__, line = __LINE__)
       eval(source, @binding, file, line)
     end
+
+    def to_s
+      object_description = "`#{object.inspect}'"
+      object_description = "of class `#{object.class.name}'" if object_description.length > 32
+      "#<IRB::Context for object #{object_description}>"
+    end
+    alias_method :inspect, :to_s
     
     def evaluate(source)
       result = __evaluate__(source.to_s, '(irb)', @line - @source.buffer.size + 1)
