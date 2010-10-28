@@ -60,9 +60,13 @@ module IRB
     #
     #   process_line("quit") # => false
     def process_line(line)
-      @source << line
+      reindented = formatter.add_input_to_context(self, line)
+      if reindented
+        driver.last_line_decreased_indentation_level(line)
+      end
+
       return false if @source.terminate?
-      
+
       if @source.syntax_error?
         output(formatter.syntax_error(@line, @source.syntax_error))
         @source.pop
@@ -75,10 +79,14 @@ module IRB
       true
     end
     
+    def driver
+      IRB::Driver.current
+    end
+
     # Output is directed to the IRB::Driver.current driver’s output if a
     # current driver is available. Otherwise it’s simply printed to $stdout.
     def output(string)
-      if driver = IRB::Driver.current
+      if driver = self.driver
         driver.output.puts(string)
       else
         puts(string)

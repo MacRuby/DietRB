@@ -15,7 +15,7 @@ module IRB
     NO_PROMPT      = ""
     RESULT_PREFIX  = "=>"
     SYNTAX_ERROR   = "SyntaxError: compile error\n(irb):%d: %s"
-    SOURCE_ROOT    = /^#{File.expand_path('../../../', __FILE__)}/
+    SOURCE_ROOT    = Regexp.new("^#{File.expand_path('../../../', __FILE__)}")
     
     attr_writer   :prompt
     attr_accessor :inspect
@@ -26,14 +26,19 @@ module IRB
       @inspect = true
       @filter_from_backtrace = [SOURCE_ROOT]
     end
+
+    def indentation(context)
+      '  ' * context.source.level
+    end
     
     def prompt(context)
-      case @prompt
+      prompt = case @prompt
       when :default then DEFAULT_PROMPT % [context.object.inspect, context.line, context.source.level]
       when :simple  then SIMPLE_PROMPT
       else
         NO_PROMPT
       end
+      prompt + indentation(context)
     end
     
     def inspect_object(object)
@@ -46,6 +51,22 @@ module IRB
         address += 0x100000000 if address < 0
         "#<#{object.class}:0x%x>" % address
       end
+    end
+
+    # Returns +true+ if adding the +line+ to the context’s source decreases the indentation level.
+    def add_input_to_context(context, line)
+      source = context.source
+      level_before = source.level
+      source << line
+      if source.level < level_before
+        source.buffer[-1] = indentation(context) + line
+        true
+      end
+    end
+
+    def reindent_last_input(context)
+      line = context.source.buffer.last
+      indentation(context, -1) + line
     end
     
     def result(object)

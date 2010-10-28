@@ -27,6 +27,15 @@ module IRB
         context.clear_buffer
         ""
       end
+
+      def last_line_decreased_indentation_level(reformatted_line)
+        move_one_line_up      = "\e[1A"
+        move_to_begin_of_line = "\r"
+        clear_to_end_of_line  = "\e[0K"
+        clear_last_line       = move_one_line_up + move_to_begin_of_line + clear_to_end_of_line
+        @output.print clear_last_line
+        @output.puts(context.prompt + reformatted_line)
+      end
       
       # Feeds input into a given context.
       #
