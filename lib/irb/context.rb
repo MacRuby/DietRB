@@ -5,6 +5,7 @@
 # Copyright (C) 2009-2010, Eloy Duran <eloy.de.enige@gmail.com>
 
 require 'irb/formatter'
+require 'irb/source'
 
 module IRB
   class Context
