@@ -15,6 +15,18 @@ describe "IRB::Formatter" do
     @context.source << "def foo"
     @formatter.prompt(@context).should == "irb(main):023:1> "
   end
+
+  it "also auto-indents the prompt, based on the source level, if requested" do
+    @formatter.prompt(@context, true).should == "irb(main):001:0> "
+
+    @context.process_line("class A")
+    @formatter.prompt(@context, true).should == "irb(main):002:1>   "
+    @formatter.prompt(@context).should       == "irb(main):002:1> "
+
+    @context.process_line("def foo")
+    @formatter.prompt(@context, true).should == "irb(main):003:2>     "
+    @formatter.prompt(@context).should       == "irb(main):003:2> "
+  end
   
   it "describes the context's object in the prompt" do
     o = Object.new

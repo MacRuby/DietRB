@@ -31,14 +31,14 @@ module IRB
       '  ' * context.source.level
     end
     
-    def prompt(context)
+    def prompt(context, indent = false)
       prompt = case @prompt
       when :default then DEFAULT_PROMPT % [context.object.inspect, context.line, context.source.level]
       when :simple  then SIMPLE_PROMPT
       else
         NO_PROMPT
       end
-      prompt + indentation(context)
+      indent ? (prompt + indentation(context)) : prompt
     end
     
     def inspect_object(object)
@@ -47,10 +47,14 @@ module IRB
         result.strip!
         result
       else
-        address = object.__id__ * 2
-        address += 0x100000000 if address < 0
-        "#<#{object.class}:0x%x>" % address
+        minimal_inspect_object(object)
       end
+    end
+
+    def minimal_inspect_object(object)
+      address = object.__id__ * 2
+      address += 0x100000000 if address < 0
+      "#<#{object.class}:0x%x>" % address
     end
 
     # Returns +true+ if adding the +line+ to the context’s source decreases the indentation level.

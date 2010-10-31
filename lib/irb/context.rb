@@ -61,9 +61,9 @@ module IRB
     #   process_line("quit") # => false
     def process_line(line)
       reindented = formatter.add_input_to_context(self, line)
-      if reindented
-        driver.last_line_decreased_indentation_level(line)
-      end
+      #if reindented
+        #driver.last_line_decreased_indentation_level(line)
+      #end
 
       return false if @source.terminate?
 
