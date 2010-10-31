@@ -12,8 +12,8 @@ describe "IRB::Formatter" do
     @formatter.prompt(@context).should == "irb(main):001:0> "
     @context.instance_variable_set(:@line, 23)
     @formatter.prompt(@context).should == "irb(main):023:0> "
-    @context.source << "def foo"
-    @formatter.prompt(@context).should == "irb(main):023:1> "
+    @context.process_line("def foo")
+    @formatter.prompt(@context).should == "irb(main):024:1> "
   end
   
   it "describes the context's object in the prompt" do
@@ -102,5 +102,10 @@ describe "IRB::Formatter" do
       @formatter.reindent_last_line_in_source(source) { source << line }.should == expected_new_line
     end
     source.to_s.should == lines.map(&:last).join("\n")
+  end
+
+  it "returns nil if the last line was not reindented" do
+    @context.source << "class A"
+    @formatter.reindent_last_line_in_source(@context.source) { @context.source << "  def foo" }.should == nil
   end
 end

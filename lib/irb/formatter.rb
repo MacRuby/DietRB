@@ -33,12 +33,12 @@ module IRB
     
     def prompt(context, indent = false)
       prompt = case @prompt
-      when :default then DEFAULT_PROMPT % [context.object.inspect, context.line, context.source.level]
+      when :default then DEFAULT_PROMPT % [context.object.inspect, context.line, context.level]
       when :simple  then SIMPLE_PROMPT
       else
         NO_PROMPT
       end
-      indent ? (prompt + indentation(context.source.level)) : prompt
+      indent ? (prompt + indentation(context.level)) : prompt
     end
     
     def inspect_object(object)
@@ -60,9 +60,10 @@ module IRB
     def reindent_last_line_in_source(source)
       old_level = source.level
       yield
+      line      = source.buffer[-1]
       new_line  = indentation(source.level < old_level ? source.level : old_level)
-      new_line += source.buffer[-1].lstrip
-      source.buffer[-1] = new_line
+      new_line += line.lstrip
+      source.buffer[-1] = new_line unless new_line == line
     end
 
     def result(object)
