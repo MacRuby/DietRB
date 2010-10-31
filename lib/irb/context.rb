@@ -98,8 +98,8 @@ module IRB
       end
     end
     
-    def prompt(indent = false)
-      formatter.prompt(self, indent)
+    def prompt(ignore_auto_indent = false)
+      formatter.prompt(self, ignore_auto_indent)
     end
     
     def input_line(line)

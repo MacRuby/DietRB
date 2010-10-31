@@ -7,24 +7,28 @@ describe "IRB::Driver::TTY" do
     @context = IRB::Context.new(Object.new)
     @driver.context_stack << @context
   end
-  
+
+  after do
+    @context.formatter.auto_indent = false
+  end
+
   it "prints the prompt and reads a line of input" do
-    @context.source << "def foo"
-    @driver.input.stub_input "calzone"
+    @context.process_line("def foo")
+    @driver.input.stub_input("calzone")
     @driver.readline.should == "calzone"
     @driver.output.printed.should == @context.prompt
   end
 
   it "prints a prompt with indentation if it's configured" do
-    @driver.auto_indent = true
-    @context.source << "def foo"
-    @driver.input.stub_input "calzone"
+    @context.formatter.auto_indent = true
+    @context.process_line("def foo")
+    @driver.input.stub_input("calzone")
     @driver.readline
-    @driver.output.printed.should == @context.prompt(true)
+    @driver.output.printed[-2,2].should == "  "
   end
   
   it "consumes input" do
-    @driver.input.stub_input "calzone"
+    @driver.input.stub_input("calzone")
     @driver.consume.should == "calzone"
   end
   
@@ -45,7 +49,7 @@ describe "IRB::Driver::TTY, when starting the runloop" do
   
   it "makes the given context the current one, for this driver, for the duration of the runloop" do
     $from_context = nil
-    @driver.input.stub_input "$from_context = IRB::Driver.current.context"
+    @driver.input.stub_input("$from_context = IRB::Driver.current.context")
     @driver.run(@context)
     $from_context.should == @context
     IRB::Driver.current.context.should == nil
@@ -53,7 +57,7 @@ describe "IRB::Driver::TTY, when starting the runloop" do
   
   it "feeds input into a given context" do
     $from_context = false
-    @driver.input.stub_input "$from_context = true", "exit"
+    @driver.input.stub_input("$from_context = true", "exit")
     @driver.run(@context)
     $from_context.should == true
   end
@@ -61,7 +65,7 @@ describe "IRB::Driver::TTY, when starting the runloop" do
   it "makes sure there's a global output redirector while running a context" do
     before = $stdout
     $from_context = nil
-    @driver.input.stub_input "$from_context = $stdout", "exit"
+    @driver.input.stub_input("$from_context = $stdout", "exit")
     @driver.run(@context)
     $from_context.class == IRB::Driver::OutputRedirector
     $stdout.should == before

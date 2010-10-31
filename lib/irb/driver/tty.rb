@@ -4,7 +4,6 @@ module IRB
   module Driver
     class TTY
       attr_reader :input, :output, :context_stack
-      attr_accessor :auto_indent # TODO: this should probably go to a more global config, which means we shouldn't completely deprecate the CONF
       
       def initialize(input = $stdin, output = $stdout)
         @input  = input
@@ -16,12 +15,8 @@ module IRB
         @context_stack.last
       end
 
-      def prompt
-        context.prompt(@auto_indent)
-      end
-      
       def readline
-        @output.print(prompt)
+        @output.print(context.prompt)
         @input.gets
       end
       

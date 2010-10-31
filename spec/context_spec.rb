@@ -117,6 +117,11 @@ describe "IRB::Context, when receiving input" do
     @output = setup_current_driver.output
     @context = IRB::Context.new(main)
     @context.extend(InputStubMixin)
+    @context.formatter.auto_indent = true
+  end
+
+  after do
+    @context.formatter.auto_indent = false
   end
   
   it "adds the received code to the source buffer" do
@@ -125,20 +130,14 @@ describe "IRB::Context, when receiving input" do
     @context.source.to_s.should == "def foo\n  p :ok"
   end
   
-  it "yields the line if it changed after reindenting" do
+  it "yields the line if it changed, *after* reindenting" do
     line = nil
     @context.process_line("def foo") { |x| line = x }
     line.should == nil
     @context.process_line("p :ok") { |x| line = x }
     line.should == "  p :ok"
   end
-  
-  it "clears the source buffer" do
-    @context.process_line("def foo")
-    @context.clear_buffer
-    @context.source.to_s.should == ""
-  end
-  
+
   it "increases the current line number, *after* yielding the new re-indented line" do
     @context.line.should == 1
     @context.process_line("def foo")

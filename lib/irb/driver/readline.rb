@@ -15,7 +15,7 @@ module IRB
       end
       
       def readline
-        source = ::Readline.readline(prompt, true)
+        source = ::Readline.readline(context.prompt, true)
         IRB::History.input(source)
         source
       end

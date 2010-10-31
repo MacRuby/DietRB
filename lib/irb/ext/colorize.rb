@@ -169,7 +169,7 @@ module IRB
       Ripper.lex(str).map { |_, type, token| colorize_token(type, token) }.join
     end
     
-    def prompt(context, indent = false)
+    def prompt(context, ignore_auto_indent = false)
       colorize_token(:prompt, super)
     end
     
