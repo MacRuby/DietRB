@@ -27,8 +27,8 @@ module IRB
       @filter_from_backtrace = [SOURCE_ROOT]
     end
 
-    def indentation(context)
-      '  ' * context.source.level
+    def indentation(level)
+      '  ' * level
     end
     
     def prompt(context, indent = false)
@@ -38,7 +38,7 @@ module IRB
       else
         NO_PROMPT
       end
-      indent ? (prompt + indentation(context)) : prompt
+      indent ? (prompt + indentation(context.source.level)) : prompt
     end
     
     def inspect_object(object)
@@ -55,6 +55,14 @@ module IRB
       address = object.__id__ * 2
       address += 0x100000000 if address < 0
       "#<#{object.class}:0x%x>" % address
+    end
+
+    def reindent_last_line_in_source(source)
+      old_level = source.level
+      yield
+      new_line  = indentation(source.level < old_level ? source.level : old_level)
+      new_line += source.buffer[-1].lstrip
+      source.buffer[-1] = new_line
     end
 
     # Returns +true+ if adding the +line+ to the context’s source decreases the indentation level.

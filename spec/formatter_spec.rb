@@ -15,18 +15,6 @@ describe "IRB::Formatter" do
     @context.source << "def foo"
     @formatter.prompt(@context).should == "irb(main):023:1> "
   end
-
-  it "also auto-indents the prompt, based on the source level, if requested" do
-    @formatter.prompt(@context, true).should == "irb(main):001:0> "
-
-    @context.process_line("class A")
-    @formatter.prompt(@context, true).should == "irb(main):002:1>   "
-    @formatter.prompt(@context).should       == "irb(main):002:1> "
-
-    @context.process_line("def foo")
-    @formatter.prompt(@context, true).should == "irb(main):003:2>     "
-    @formatter.prompt(@context).should       == "irb(main):003:2> "
-  end
   
   it "describes the context's object in the prompt" do
     o = Object.new
@@ -88,5 +76,31 @@ describe "IRB::Formatter" do
   it "prints that a syntax error occurred on the last line and reset the buffer to the previous line" do
     @formatter.syntax_error(2, "syntax error, unexpected '}'").should ==
       "SyntaxError: compile error\n(irb):2: syntax error, unexpected '}'"
+  end
+
+  it "pads the prompt, with indentation whitespace based on the source level, if requested" do
+    @formatter.prompt(@context, true).should == "irb(main):001:0> "
+
+    @context.process_line("class A")
+    @formatter.prompt(@context, true).should == "irb(main):002:1>   "
+    @formatter.prompt(@context).should       == "irb(main):002:1> "
+
+    @context.process_line("def foo")
+    @formatter.prompt(@context, true).should == "irb(main):003:2>     "
+    @formatter.prompt(@context).should       == "irb(main):003:2> "
+  end
+
+  it "reindents the last line in a Source#buffer after execution of the block, and returns the new line" do
+    source = @context.source
+    lines = [
+      ["\tclass A", "class A"],
+      ["def foo",   "  def foo"],
+      ["    end",   "  end"],
+      ["    end",   "end"]
+    ]
+    lines.each do |line, expected_new_line|
+      @formatter.reindent_last_line_in_source(source) { source << line }.should == expected_new_line
+    end
+    source.to_s.should == lines.map(&:last).join("\n")
   end
 end
