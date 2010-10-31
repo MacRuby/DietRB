@@ -11,13 +11,14 @@ module IRB
   class Context
     IGNORE_RESULT = :irb_ignore_result
     
-    attr_reader :object, :binding, :line, :source
+    attr_reader :object, :binding, :line, :level, :source
     attr_accessor :formatter
     
     def initialize(object, explicit_binding = nil)
       @object  = object
       @binding = explicit_binding || object.instance_eval { binding }
       @line    = 1
+      @level   = 0
       clear_buffer
       
       @last_result_assigner = __evaluate__("_ = nil; proc { |val| _ = val }")
@@ -59,11 +60,14 @@ module IRB
     # But at code block indentation level 0, `quit' means exit the runloop:
     #
     #   process_line("quit") # => false
+    #
+    # If re-indenting the line results in a new line, the new line is yielded
+    # to the optional block. This happens *before* the line is actually
+    # processed, so the caller (driver) has the opportunity to update the last
+    # printed line.
     def process_line(line)
-      reindented = formatter.add_input_to_context(self, line)
-      #if reindented
-        #driver.last_line_decreased_indentation_level(line)
-      #end
+      new_line = formatter.reindent_last_line_in_source(@source) { @source << line }
+      yield new_line if new_line && block_given?
 
       return false if @source.terminate?
 
@@ -75,6 +79,7 @@ module IRB
         clear_buffer
       end
       @line += 1
+      @level = source.level
       
       true
     end
@@ -93,8 +98,8 @@ module IRB
       end
     end
     
-    def prompt
-      formatter.prompt(self)
+    def prompt(indent = false)
+      formatter.prompt(self, indent)
     end
     
     def input_line(line)
