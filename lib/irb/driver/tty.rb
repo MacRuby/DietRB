@@ -3,6 +3,11 @@ require 'irb/driver'
 module IRB
   module Driver
     class TTY
+      move_one_line_up      = "\e[1A"
+      move_to_begin_of_line = "\r"
+      clear_to_end_of_line  = "\e[0K"
+      CLEAR_LAST_LINE       = move_one_line_up + move_to_begin_of_line + clear_to_end_of_line
+
       attr_reader :input, :output, :context_stack
       
       def initialize(input = $stdin, output = $stdout)
@@ -28,17 +33,13 @@ module IRB
         ""
       end
 
-      def last_line_decreased_indentation_level(reformatted_line)
-        move_one_line_up      = "\e[1A"
-        move_to_begin_of_line = "\r"
-        clear_to_end_of_line  = "\e[0K"
-        clear_last_line       = move_one_line_up + move_to_begin_of_line + clear_to_end_of_line
-        @output.print clear_last_line
-        @output.puts(context.prompt + reformatted_line)
+      def update_last_line(reformatted_line)
+        @output.print CLEAR_LAST_LINE
+        @output.puts(context.prompt(true) + reformatted_line)
       end
 
       def process_input(line)
-        context.process_line(line) { |new_line| last_line_decreased_indentation_level(new_line) }
+        context.process_line(line) { |reformatted_line| update_last_line(reformatted_line) }
       end
       
       # Feeds input into a given context.

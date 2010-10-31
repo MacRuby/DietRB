@@ -1,10 +1,12 @@
 require File.expand_path('../../spec_helper', __FILE__)
 require 'irb/driver/tty'
 
+main = self
+
 describe "IRB::Driver::TTY" do
   before do
     @driver = IRB::Driver::TTY.new(InputStub.new, OutputStub.new)
-    @context = IRB::Context.new(Object.new)
+    @context = IRB::Context.new(main)
     @driver.context_stack << @context
   end
 
@@ -37,6 +39,22 @@ describe "IRB::Driver::TTY" do
     def @driver.readline; raise Interrupt; end
     @driver.consume.should == ""
     @context.source.to_s.should == ""
+  end
+
+  it "feeds the input into the context" do
+    @driver.process_input("def foo")
+    @context.source.to_s.should == "def foo"
+  end
+
+  it "updates the previously printed line on the console, if a change to the input occurs (such as re-indenting)" do
+    @context.formatter.auto_indent = true
+    @driver.process_input("def foo")
+    @driver.process_input("p :ok")
+    @driver.process_input("  end")
+    @driver.output.printed.strip.should == [
+      IRB::Driver::TTY::CLEAR_LAST_LINE + "irb(main):002:1>   p :ok",
+      IRB::Driver::TTY::CLEAR_LAST_LINE + "irb(main):003:1> end"
+    ].join("\n")
   end
 end
 
