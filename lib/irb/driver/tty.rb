@@ -33,13 +33,15 @@ module IRB
         ""
       end
 
-      def update_last_line(reformatted_line)
+      def update_last_line(prompt, reformatted_line)
         @output.print CLEAR_LAST_LINE
-        @output.puts(context.prompt(true) + reformatted_line)
+        @output.puts("#{prompt}#{reformatted_line}")
       end
 
       def process_input(line)
-        context.process_line(line) { |reformatted_line| update_last_line(reformatted_line) }
+        context.process_line(line) do |prompt, line|
+          update_last_line(prompt, line)
+        end
       end
       
       # Feeds input into a given context.

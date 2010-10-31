@@ -61,13 +61,13 @@ module IRB
     #
     #   process_line("quit") # => false
     #
-    # If re-indenting the line results in a new line, the new line is yielded
-    # to the optional block. This happens *before* the line is actually
-    # processed, so the caller (driver) has the opportunity to update the last
-    # printed line.
+    # If re-indenting the line results in a new line, the reformatted line and
+    # prompt are yielded to the optional block. This happens *before* the line
+    # is actually processed, so the caller (driver) has the opportunity to
+    # update the last printed line.
     def process_line(line)
-      new_line = formatter.reindent_last_line_in_source(@source) { @source << line }
-      yield new_line if new_line && block_given?
+      prompt_and_line = formatter.reindent_last_line(self) { @source << line }
+      yield(*prompt_and_line) if prompt_and_line && block_given?
 
       return false if @source.terminate?
 

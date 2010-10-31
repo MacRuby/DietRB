@@ -131,11 +131,11 @@ describe "IRB::Context, when receiving input" do
   end
   
   it "yields the line if it changed, *after* reindenting" do
-    line = nil
-    @context.process_line("def foo") { |x| line = x }
-    line.should == nil
-    @context.process_line("p :ok") { |x| line = x }
-    line.should == "  p :ok"
+    prompt_and_line = nil
+    @context.process_line("def foo") { |p, l| prompt_and_line = [p, l] }
+    prompt_and_line.should == nil
+    @context.process_line("p :ok") { |p, l| prompt_and_line = [p, l] }
+    prompt_and_line.should == ["irb(main):002:1> ", "  p :ok"]
   end
 
   it "increases the current line number, *after* yielding the new re-indented line" do

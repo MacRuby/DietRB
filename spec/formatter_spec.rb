@@ -80,7 +80,7 @@ describe "IRB::Formatter" do
 
   it "always skips re-indenting the last line in a Source#buffer if `auto_indent' is turned off" do
     @context.source << "class A"
-    @formatter.reindent_last_line_in_source(@context.source) { @context.source << "def foo" }.should == nil
+    @formatter.reindent_last_line(@context) { @context.source << "def foo" }.should == nil
     @context.source.buffer.last.should == "def foo"
   end
 
@@ -109,22 +109,25 @@ describe "IRB::Formatter" do
     end
 
     it "reindents the last line in a Source#buffer after execution of the block, and returns the new line" do
-      source = @context.source
+      # the line number in the prompt is irrelevant for this test
       lines = [
-        ["\tclass A", "class A"],
-        ["def foo",   "  def foo"],
-        ["    end",   "  end"],
-        ["    end",   "end"]
+        ["\tclass A", ["irb(main):001:0> ", "class A"]],
+        ["def foo",   ["irb(main):001:1> ", "  def foo"]],
+        ["    end",   ["irb(main):001:1> ", "  end"]],
+        ["    end",   ["irb(main):001:0> ", "end"]]
       ]
-      lines.each do |line, expected_new_line|
-        @formatter.reindent_last_line_in_source(source) { source << line }.should == expected_new_line
+      lines.each do |line, expected_prompt_and_line|
+        @formatter.reindent_last_line(@context) do
+          @context.source << line
+        end.should == expected_prompt_and_line
       end
-      source.to_s.should == lines.map(&:last).join("\n")
+      @context.source.to_s.should == lines.map { |x| x[1][1] }.join("\n")
     end
 
-    it "returns nil if the last line was not reindented" do
+    it "returns nil if the last line was not reindented and the level didn't change" do
       @context.source << "class A"
-      @formatter.reindent_last_line_in_source(@context.source) { @context.source << "  def foo" }.should == nil
+      @formatter.reindent_last_line(@context) { @context.source << "  def foo" }.should == nil
+      @formatter.reindent_last_line(@context) { @context.source << "  end" }.should_not == nil
     end
   end
 end

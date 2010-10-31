@@ -53,7 +53,7 @@ describe "IRB::Driver::TTY" do
     @driver.process_input("  end")
     @driver.output.printed.strip.should == [
       IRB::Driver::TTY::CLEAR_LAST_LINE + "irb(main):002:1>   p :ok",
-      IRB::Driver::TTY::CLEAR_LAST_LINE + "irb(main):003:1> end"
+      IRB::Driver::TTY::CLEAR_LAST_LINE + "irb(main):003:0> end"
     ].join("\n")
   end
 end

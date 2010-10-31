@@ -34,14 +34,15 @@ module IRB
       INDENTATION * level
     end
     
-    def prompt(context, ignore_auto_indent = false)
+    def prompt(context, ignore_auto_indent = false, level = nil)
+      level ||= context.level
       prompt = case @prompt
-      when :default then DEFAULT_PROMPT % [context.object.inspect, context.line, context.level]
+      when :default then DEFAULT_PROMPT % [context.object.inspect, context.line, level]
       when :simple  then SIMPLE_PROMPT
       else
         NO_PROMPT
       end
-      @auto_indent && !ignore_auto_indent ? (prompt + indentation(context.level)) : prompt
+      @auto_indent && !ignore_auto_indent ? "#{prompt}#{indentation(level)}" : prompt
     end
     
     def inspect_object(object)
@@ -60,17 +61,23 @@ module IRB
       "#<#{object.class}:0x%x>" % address
     end
 
-    def reindent_last_line_in_source(source)
+    def reindent_last_line(context)
       unless @auto_indent
         yield
         nil
       else
+        source    = context.source
         old_level = source.level
         yield
+        level     = source.level < old_level ? source.level : old_level
         line      = source.buffer[-1]
-        new_line  = indentation(source.level < old_level ? source.level : old_level)
-        new_line += line.lstrip
-        source.buffer[-1] = new_line unless new_line == line
+        new_line  = indentation(level)
+        new_line << line.lstrip
+        unless line == new_line && level == old_level
+          source.buffer[-1] = new_line
+          new_prompt        = prompt(context, true, level)
+          [new_prompt, new_line]
+        end
       end
     end
 
