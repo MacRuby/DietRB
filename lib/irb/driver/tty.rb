@@ -4,6 +4,7 @@ module IRB
   module Driver
     class TTY
       attr_reader :input, :output, :context_stack
+      attr_accessor :auto_indent # TODO: this should probably go to a more global config, which means we shouldn't completely deprecate the CONF
       
       def initialize(input = $stdin, output = $stdout)
         @input  = input
@@ -14,9 +15,13 @@ module IRB
       def context
         @context_stack.last
       end
+
+      def prompt
+        context.prompt(@auto_indent)
+      end
       
       def readline
-        @output.print(context.prompt)
+        @output.print(prompt)
         @input.gets
       end
       
@@ -36,6 +41,10 @@ module IRB
         @output.print clear_last_line
         @output.puts(context.prompt + reformatted_line)
       end
+
+      def process_input(line)
+        context.process_line(line) { |new_line| last_line_decreased_indentation_level(new_line) }
+      end
       
       # Feeds input into a given context.
       #
@@ -44,7 +53,8 @@ module IRB
       def run(context)
         @context_stack << context
         while line = consume
-          break unless context.process_line(line)
+          continue = process_input(line)
+          break unless continue
         end
       ensure
         @context_stack.pop

@@ -9,9 +9,18 @@ describe "IRB::Driver::TTY" do
   end
   
   it "prints the prompt and reads a line of input" do
+    @context.source << "def foo"
     @driver.input.stub_input "calzone"
     @driver.readline.should == "calzone"
     @driver.output.printed.should == @context.prompt
+  end
+
+  it "prints a prompt with indentation if it's configured" do
+    @driver.auto_indent = true
+    @context.source << "def foo"
+    @driver.input.stub_input "calzone"
+    @driver.readline
+    @driver.output.printed.should == @context.prompt(true)
   end
   
   it "consumes input" do
