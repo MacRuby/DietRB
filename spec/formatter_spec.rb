@@ -78,34 +78,53 @@ describe "IRB::Formatter" do
       "SyntaxError: compile error\n(irb):2: syntax error, unexpected '}'"
   end
 
-  it "pads the prompt, with indentation whitespace based on the source level, if requested" do
-    @formatter.prompt(@context, true).should == "irb(main):001:0> "
-
-    @context.process_line("class A")
-    @formatter.prompt(@context, true).should == "irb(main):002:1>   "
-    @formatter.prompt(@context).should       == "irb(main):002:1> "
-
-    @context.process_line("def foo")
-    @formatter.prompt(@context, true).should == "irb(main):003:2>     "
-    @formatter.prompt(@context).should       == "irb(main):003:2> "
-  end
-
-  it "reindents the last line in a Source#buffer after execution of the block, and returns the new line" do
-    source = @context.source
-    lines = [
-      ["\tclass A", "class A"],
-      ["def foo",   "  def foo"],
-      ["    end",   "  end"],
-      ["    end",   "end"]
-    ]
-    lines.each do |line, expected_new_line|
-      @formatter.reindent_last_line_in_source(source) { source << line }.should == expected_new_line
-    end
-    source.to_s.should == lines.map(&:last).join("\n")
-  end
-
-  it "returns nil if the last line was not reindented" do
+  it "always skips re-indenting the last line in a Source#buffer if `auto_indent' is turned off" do
     @context.source << "class A"
-    @formatter.reindent_last_line_in_source(@context.source) { @context.source << "  def foo" }.should == nil
+    @formatter.reindent_last_line_in_source(@context.source) { @context.source << "def foo" }.should == nil
+    @context.source.buffer.last.should == "def foo"
+  end
+
+  describe "with auto-indentation" do
+    before do
+      @formatter.auto_indent = true
+    end
+
+    it "returns the whitespace to append to the prompt, based on the given level" do
+      @formatter.indentation(0).should == ""
+      @formatter.indentation(1).should == "  "
+      @formatter.indentation(2).should == "    "
+    end
+
+    it "pads the prompt, based on the source level" do
+      @formatter.prompt(@context).should == "irb(main):001:0> "
+      @context.process_line("class A")
+      @formatter.prompt(@context).should == "irb(main):002:1>   "
+      @context.process_line("def foo")
+      @formatter.prompt(@context).should == "irb(main):003:2>     "
+    end
+
+    it "does not pad the prompt if it's explicitely specified" do
+      @context.process_line("class A")
+      @formatter.prompt(@context, true).should == "irb(main):002:1> "
+    end
+
+    it "reindents the last line in a Source#buffer after execution of the block, and returns the new line" do
+      source = @context.source
+      lines = [
+        ["\tclass A", "class A"],
+        ["def foo",   "  def foo"],
+        ["    end",   "  end"],
+        ["    end",   "end"]
+      ]
+      lines.each do |line, expected_new_line|
+        @formatter.reindent_last_line_in_source(source) { source << line }.should == expected_new_line
+      end
+      source.to_s.should == lines.map(&:last).join("\n")
+    end
+
+    it "returns nil if the last line was not reindented" do
+      @context.source << "class A"
+      @formatter.reindent_last_line_in_source(@context.source) { @context.source << "  def foo" }.should == nil
+    end
   end
 end

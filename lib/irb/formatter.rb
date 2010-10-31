@@ -14,31 +14,34 @@ module IRB
     SIMPLE_PROMPT  = ">> "
     NO_PROMPT      = ""
     RESULT_PREFIX  = "=>"
+    INDENTATION    = "  "
     SYNTAX_ERROR   = "SyntaxError: compile error\n(irb):%d: %s"
     SOURCE_ROOT    = Regexp.new("^#{File.expand_path('../../../', __FILE__)}")
     
     attr_writer   :prompt
     attr_accessor :inspect
+    attr_accessor :auto_indent
     attr_reader   :filter_from_backtrace
     
     def initialize
-      @prompt  = :default
-      @inspect = true
+      @prompt      = :default
+      @inspect     = true
+      @auto_indent = false
       @filter_from_backtrace = [SOURCE_ROOT]
     end
 
     def indentation(level)
-      '  ' * level
+      INDENTATION * level
     end
     
-    def prompt(context, indent = false)
+    def prompt(context, ignore_auto_indent = false)
       prompt = case @prompt
       when :default then DEFAULT_PROMPT % [context.object.inspect, context.line, context.level]
       when :simple  then SIMPLE_PROMPT
       else
         NO_PROMPT
       end
-      indent ? (prompt + indentation(context.level)) : prompt
+      @auto_indent && !ignore_auto_indent ? (prompt + indentation(context.level)) : prompt
     end
     
     def inspect_object(object)
@@ -58,12 +61,17 @@ module IRB
     end
 
     def reindent_last_line_in_source(source)
-      old_level = source.level
-      yield
-      line      = source.buffer[-1]
-      new_line  = indentation(source.level < old_level ? source.level : old_level)
-      new_line += line.lstrip
-      source.buffer[-1] = new_line unless new_line == line
+      unless @auto_indent
+        yield
+        nil
+      else
+        old_level = source.level
+        yield
+        line      = source.buffer[-1]
+        new_line  = indentation(source.level < old_level ? source.level : old_level)
+        new_line += line.lstrip
+        source.buffer[-1] = new_line unless new_line == line
+      end
     end
 
     def result(object)
