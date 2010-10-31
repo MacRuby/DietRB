@@ -1,3 +1,4 @@
+* Move auto_indent option to formatter
 * Complete file paths in strings (for require etc).
 * Write docs for using a as library. Probably right after creating a Cocoa client.
 * Write a not useless README.
