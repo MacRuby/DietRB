@@ -6,6 +6,7 @@ describe "IRB::Formatter" do
   before do
     @formatter = IRB::Formatter.new
     @context = IRB::Context.new(main)
+    @formatter.auto_indent = false
   end
   
   it "returns a prompt string, displaying line number and code indentation level" do
@@ -128,6 +129,10 @@ describe "IRB::Formatter" do
       @context.source << "class A"
       @formatter.reindent_last_line(@context) { @context.source << "  def foo" }.should == nil
       @formatter.reindent_last_line(@context) { @context.source << "  end" }.should_not == nil
+    end
+
+    it "returns nil if the source buffer is empty" do
+      @formatter.reindent_last_line(@context) {}.should == nil
     end
   end
 end

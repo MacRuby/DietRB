@@ -26,7 +26,7 @@ module IRB
     def initialize
       @prompt      = :default
       @inspect     = true
-      @auto_indent = false
+      @auto_indent = true
       @filter_from_backtrace = [SOURCE_ROOT]
     end
 
@@ -69,14 +69,15 @@ module IRB
         source    = context.source
         old_level = source.level
         yield
-        level     = source.level < old_level ? source.level : old_level
-        line      = source.buffer[-1]
-        new_line  = indentation(level)
-        new_line << line.lstrip
-        unless line == new_line && level == old_level
-          source.buffer[-1] = new_line
-          new_prompt        = prompt(context, true, level)
-          [new_prompt, new_line]
+        if line = source.buffer[-1]
+          # only if the level raises do we use the new value
+          level = source.level < old_level ? source.level : old_level
+          new_line = "#{indentation(level)}#{line.lstrip}"
+          # don't return anything if the new line and level are the same
+          unless line == new_line && level == old_level
+            source.buffer[-1] = new_line
+            [prompt(context, true, level), new_line]
+          end
         end
       end
     end
