@@ -65,22 +65,6 @@ module IRB
       source.buffer[-1] = new_line
     end
 
-    # Returns +true+ if adding the +line+ to the context’s source decreases the indentation level.
-    def add_input_to_context(context, line)
-      source = context.source
-      level_before = source.level
-      source << line
-      if source.level < level_before
-        source.buffer[-1] = indentation(context) + line
-        true
-      end
-    end
-
-    def reindent_last_input(context)
-      line = context.source.buffer.last
-      indentation(context, -1) + line
-    end
-    
     def result(object)
       "#{RESULT_PREFIX} #{inspect_object(object)}"
     end
