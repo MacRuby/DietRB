@@ -53,20 +53,20 @@ namespace :macruby do
   end
 end
 
-# begin
-#   require 'rubygems'
-#   require 'jeweler'
-#   require File.expand_path('../lib/irb/version', __FILE__)
-#   Jeweler::Tasks.new do |gemspec|
-#     gemspec.name = "dietrb"
-#     gemspec.version = IRB::VERSION::STRING
-#     gemspec.summary = gemspec.description = "IRB on a diet, for MacRuby / Ruby 1.9"
-#     gemspec.email = "eloy.de.enige@gmail.com"
-#     gemspec.homepage = "http://github.com/alloy/dietrb"
-#     gemspec.authors = ["Eloy Duran"]
-#     
-#     gemspec.required_ruby_version = ::Gem::Requirement.new("~> 1.9")
-#     gemspec.files.reject! { |file| file =~ /^(extensions|\.gitignore)/ }
-#   end
-# rescue LoadError
-# end
+#begin
+  #require 'rubygems'
+  #require 'jeweler'
+  #require File.expand_path('../lib/irb/version', __FILE__)
+  #Jeweler::Tasks.new do |gemspec|
+    #gemspec.name = "dietrb"
+    #gemspec.version = IRB::VERSION::STRING
+    #gemspec.summary = gemspec.description = "IRB on a diet, for MacRuby / Ruby 1.9"
+    #gemspec.email = "eloy.de.enige@gmail.com"
+    #gemspec.homepage = "http://github.com/alloy/dietrb"
+    #gemspec.authors = ["Eloy Duran"]
+    
+    #gemspec.required_ruby_version = ::Gem::Requirement.new("~> 1.9")
+    #gemspec.files.reject! { |file| file =~ /^(extensions|\.gitignore|\w+_prototype\.rb)/ }
+  #end
+#rescue LoadError
+#end
