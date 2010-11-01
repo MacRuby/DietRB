@@ -7,6 +7,10 @@ class Config
       @options = {}
     end
 
+    def new
+      @klass.new
+    end
+
     def add_option(name, default, description)
       name = name.to_s
       @options[name] = [default, description]
@@ -19,9 +23,9 @@ class Config
     end
 
     def to_s
-      @options.keys.sort.map do |name|
+      (["config.#{@name}.klass = #{@klass}"] + @options.keys.sort.map do |name|
         "config.#{@name}.#{name} = #{@options[name][0]} # #{@options[name][1]}"
-      end.join("\n")
+      end).join("\n")
     end
 
     def method_missing(name, *args)
@@ -79,7 +83,7 @@ end
 
 puts config
 
-f = Formatter.new
+f = config.formatter.new
 p f.use_inspect
 f.use_inspect = false
 p f.use_inspect
