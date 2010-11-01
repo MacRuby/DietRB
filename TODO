@@ -6,3 +6,9 @@
 * Make sure the following formatters work: hirb, and looksee
 * Make sure the majority of the utils in utility_belt work
 * Possibly add copy-paste support as an ext
+
+= Config
+
+Add a global config. Modules such as the formatter can register options with it.
+The modules must always check the global config, unless the option has been
+explicitely overriden on the module instance. See config_prototype.rb
