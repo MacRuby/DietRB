@@ -1,3 +1,4 @@
+* Make RVM's irbrc work
 * Write docs for using a as library. Probably right after creating a Cocoa client.
 * Write a not useless README.
 * Add specs for irb/driver/socket, and possibly for bin/dietrb.
