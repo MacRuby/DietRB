@@ -12,7 +12,7 @@ end
 
 desc "Run dietrb"
 task :run do
-  sh "#{ruby_bin} -I lib ./bin/dietrb -d -r irb/ext/colorize -r pp"
+  sh "env RUBYOPT='-w' #{ruby_bin} -I lib ./bin/dietrb -d -r irb/ext/colorize -r pp"
 end
 
 namespace :macruby do
