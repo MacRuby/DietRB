@@ -72,7 +72,7 @@ module IRB
     end
     
     def instance_methods_of(klass)
-      evaluate(klass).instance_methods
+      evaluate(klass).instance_methods(true, true)
     end
     
     # TODO: test and or fix the fact that we need to get constants from the
@@ -106,6 +106,11 @@ module IRB
             filter   = stack[2][VALUE] if stack[2]
             receiver = "#{klass}.new"
             methods  = instance_methods_of(klass)
+          elsif stack[1][VALUE] == 'alloc' && defined?(RUBY_ENGINE) && RUBY_ENGINE == 'macruby'
+            klass    = stack[0][VALUE][VALUE]
+            filter   = stack[2][VALUE] if stack[2]
+            receiver = "#{klass}.alloc"
+            methods  = instance_methods_of(klass).grep(/^init[A-Z]?/)
           else
             filter   = root[CALLEE][VALUE]
             filter   = stack[1][VALUE]
