@@ -209,15 +209,21 @@ describe "IRB::Completion" do
       end
       
       it "returns *all* public instance methods of the class (the receiver) that ::new is called on" do
-        complete("Playground.new.").should == wrap_array(Playground.instance_methods(true, true), 'Playground.new')
+        if IRB::Completion::INCLUDE_MACRUBY_HELPERS
+          imethods = Playground.instance_methods(true, true)
+        else
+          imethods = Playground.instance_methods(true)
+        end
+
+        complete("Playground.new.").should == wrap_array(imethods, 'Playground.new')
         complete("Playground.new.a_local_m").should == %w{ Playground.new.a_local_method }
         
         @context.__evaluate__("klass = Playground")
-        complete("klass.new.").should == wrap_array(Playground.instance_methods(true, true), 'klass.new')
+        complete("klass.new.").should == wrap_array(imethods, 'klass.new')
         complete("klass.new.a_local_m").should == %w{ klass.new.a_local_method }
       end
 
-      if defined?(RUBY_ENGINE) && RUBY_ENGINE == 'macruby'
+      if IRB::Completion::INCLUDE_MACRUBY_HELPERS
         it "returns *all* instance methods that are prefixed with `init' of the class (the receiver) that ::alloc is called on" do
           framework 'AppKit'
           complete("NSSpeechSynthesizer.alloc.ini").should == %w{ NSSpeechSynthesizer.alloc.init NSSpeechSynthesizer.alloc.initWithVoice }
