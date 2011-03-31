@@ -1,3 +1,4 @@
+* Make completing code this work: Dir.entries( '.' ).first.re
 * Make RVM's irbrc work
 * Write docs for using a as library. Probably right after creating a Cocoa client.
 * Write a not useless README.
